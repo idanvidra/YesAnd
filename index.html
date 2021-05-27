@@ -19,13 +19,7 @@
 </head>
 <body>
   <pre id="log"></pre>
-
-  <div class="typing">
-    <span class="typing__bullet"></span>
-    <span class="typing__bullet"></span>
-    <span class="typing__bullet"></span>
-  </div>
-
+  <pre id="typing"></pre>
   <pre id="input" contenteditable="true"></pre>
   <button id="btnSend">Send</button>
   <button id="btnSave">Save convo</button>
@@ -52,7 +46,20 @@
   // init user nickname
   var user_nickname = generateName();
   
-
+  // init unique user ID
+  var user_ID = getRandomInt(0, 99999)
+  
+  // typing indicator function
+  function typing(messanger_ID) {
+    // check if the person who sent the message has the same ID as current user
+    if(user_ID != messanger_ID){
+        // if not show other user is typing for 5 seconds
+        document.getElementById("typing").textContent = "typing";
+        setTimeout(function () {
+          document.getElementById("typing").textContent = "";
+      }, 5000);
+    }
+    }
   // someone joins room handler
   b.once("seen", function() 
               { 
@@ -66,9 +73,10 @@
   // message written in room handler
   b.on("message", function(address ,message) 
                   {
-                    if(message == "typing..."){
-                      console.log("typing")
-                    } else{
+                    // the other user is typing
+                    if(message.startsWith("typing...")){
+                      typing(message.split(":")[1]);
+                    } else{ // regular message
                       log(message);
                     }
                   });
@@ -82,17 +90,22 @@
   // send message handler
   // the message is written to log element
   document.getElementById("input").onkeydown = function(ev) {
+    // enter was pressed
     if (ev.keyCode == 13) {
       if (b.lastwirecount) {
+        // helping start the convo
         if(document.getElementById("input").innerHTML == "help"){
           b.send("[" + getTimestamp() + "]" + " " + user_nickname + ": " + generateAdventure());
-        } else {
+        } else { // regular message
           b.send("[" + getTimestamp() + "]" + " " + user_nickname + ": " + ev.target.textContent);
       }}
       ev.target.textContent = "";
       ev.preventDefault();
     } else {
-      b.send("typing...");
+      // if backspace not pressed
+      if(ev.keyCode != 8){
+        b.send("typing...:" + user_ID);
+      }
     }
   }
 
@@ -229,7 +242,8 @@
 
 
   // var _typingIndicator = document.querySelector('.typing'),
-  //   _input = document.querySelector('#input'),
+  //   // _input = document.querySelector('#input'),
+  //   _input = document.getElementById("input"),
   //   idleTime = 400,
   //   idleTimer = null,
   //   inputValue,
@@ -283,6 +297,7 @@
   //     };
   // }
 
+  
   // initTypingIndicator();
 
 
