@@ -1,3 +1,4 @@
+// class to handle typing indicator timing
 class TypingTimer {
     constructor( typingElement ){
         this.timeRemaining = 0;
@@ -9,9 +10,7 @@ class TypingTimer {
         this.updateTimer();
         this.interval = setInterval(this.updateTimer, 1000);
         //start showing typing
-        this.typingElement.textContent = 'Typing...';
-        
-        
+        this.typingElement.textContent = 'Typing...';   
     }
 
     updateTimer = () =>{
@@ -24,8 +23,13 @@ class TypingTimer {
         }
     }
 
-
+    stopTimer = () => {
+      this.timeRemaining = 0;
+      clearInterval(this.interval);
+      this.typingElement.textContent = '';
+    }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   function log(message) {
@@ -53,7 +57,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // init user nickname
-  const user_nickname = generateName();
+  const userNickname = generateName();
 
   // init unique user ID
   const userID = getRandomInt(0, 99999);
@@ -65,24 +69,34 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // write my adress on screen
   log(" Welcome to your Yes And adventure, here are the rules...\n");
-  log(" Your nickname is: " + user_nickname + "\n");
+  log(" Your nickname is: " + userNickname + "\n");
 
+  // init typing indicator timer
+  const typingIndicatorTimer = new TypingTimer(document.getElementById('typing'));
 
-  const timerTyping = new TypingTimer(document.getElementById('typing'));
+  // this function handles typing indication when needed
+  function typingIndicatorHandler(senderId, finishedTyping){
+    if(finishedTyping){
+      typingIndicatorTimer.stopTimer();
+    } else {
+      if( senderId != userID ){
+        if(typingIndicatorTimer.timeRemaining <= 0){
+            typingIndicatorTimer.start();
+        }else{
+            typingIndicatorTimer.timeRemaining = 5;
+        }
+      }
+    }
+  }
+
   // message written in room handler
   b.on("message", function (address, message) {
     // the other user is typing
     if (message.startsWith("typing...")) {
         const senderId = message.split(":")[1];
-        if( senderId != userID){
-            if(timerTyping.timeRemaining <= 0){
-                timerTyping.start();
-            }else{
-                timerTyping.timeRemaining = 5;
-            }
-        }
-
+        typingIndicatorHandler(senderId, finishedTyping=false);
     } else {
+      typingIndicatorHandler(userID, finishedTyping=true);
       // regular message
       log(message);
     }
@@ -107,7 +121,7 @@ window.addEventListener("DOMContentLoaded", () => {
               getTimestamp() +
               "]" +
               " " +
-              user_nickname +
+              userNickname +
               ": " +
               generateAdventure()
           );
@@ -118,7 +132,7 @@ window.addEventListener("DOMContentLoaded", () => {
               getTimestamp() +
               "]" +
               " " +
-              user_nickname +
+              userNickname +
               ": " +
               ev.target.textContent
           );
@@ -143,7 +157,7 @@ window.addEventListener("DOMContentLoaded", () => {
             getTimestamp() +
             "]" +
             " " +
-            user_nickname +
+            userNickname +
             ": " +
             generateAdventure()
         );
@@ -153,7 +167,7 @@ window.addEventListener("DOMContentLoaded", () => {
             getTimestamp() +
             "]" +
             " " +
-            user_nickname +
+            userNickname +
             ": " +
             document.getElementById("input").innerHTML
         );
