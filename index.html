@@ -5,16 +5,21 @@
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <title>Adventure Time!</title>
   <style>
-    body { background-color: #333; font-size: 1.5em; padding: 0em 0.25em; }
-    pre { color: #fff; white-space: pre-wrap; word-wrap: break-word; text-shadow: 0 0 10px #ccc; }
-    #input { border-bottom: 1px solid #ccc; background-color: #383838; padding: 0.25em; outline: 0; }
+    body { background-color: #FBE8A6; font-size: 1.5em; padding: 0em 0.25em; }
+    pre { color: #383838; white-space: pre-wrap; word-wrap: break-word; text-shadow: 0 0 10px #ccc; }
+    #input { border-bottom: 1px solid #383838; background-color: rgb(245, 242, 227); padding: 0.25em; outline: 0; }
     #input::before { content: "> "; }
+    #log {color: #FF5733;}
+    #instructions {color: #383838}
+    button {}
   </style>
   <script src="https://chr15m.github.io/bugout/bugout.min.js" type="application/javascript"></script>
 </head>
 <body>
+  <pre id="instructions"></pre>
   <pre id="log"></pre>
   <pre id="typing"></pre>
+  <pre id="timer"></pre>
   <pre id="input" contenteditable="true"></pre>
   <button id="btnSend">Send</button>
   <button id="btnSave">Save convo</button>

@@ -30,12 +30,66 @@ class TypingTimer {
     }
 }
 
+// class to handle messanger timer 
+class MessageTimer {
+  constructor ( timerElement ){
+    this.timeRemainingUntillTimerShown = 0;
+    this.timeRemainingUntillMessageEnd = 0;
+    this.timerElement = timerElement;
+    this.numberOfKeysTyped = 0;
+    this.isActive = false;
+  }
+
+  start = () => {
+    if(!this.isActive){
+      this.isActive = true;
+      this.timeRemainingUntillTimerShown = 15;
+      this.updateTimerUntillTimerShown();
+      this.intervalUntillTimerShown = setInterval(this.updateTimerUntillTimerShown, 1000);
+      this.timerElement.textContent = '';
+    }
+  }
+
+  updateTimerUntillTimerShown = () => {
+    if(this.timeRemainingUntillTimerShown <= 0){
+      clearInterval(this.intervalUntillTimerShown);
+      this.timeRemainingUntillMessageEnd = 15;
+      this.updateTimerUntillMessageEnd();
+      this.intervalUntillMessageEnd = setInterval(this.updateTimerUntillMessageEnd, 1000);
+      this.timerElement.textContent = String(this.timeRemainingUntillMessageEnd)
+    }else{
+        this.timeRemainingUntillTimerShown -= 1;
+    }
+  }
+
+  updateTimerUntillMessageEnd = () => {
+    if(this.timeRemainingUntillMessageEnd <= 0){
+      clearInterval(this.intervalUntillMessageEnd);
+      this.timerElement.textContent = 'Times up, send the message';
+    }else{
+        this.timeRemainingUntillMessageEnd -= 1;
+        this.timerElement.textContent = String(this.timeRemainingUntillMessageEnd);
+    }
+  }
+
+  stopTimer = () => {
+    this.timeRemainingUntillTimerShown = 0;
+    clearInterval(this.intervalUntillTimerShown);
+    this.timeRemainingUntillMessageEnd = 0;
+    clearInterval(this.intervalUntillMessageEnd);
+    this.timerElement.textContent = '';
+    this.isActive = false;
+  }
+}
 
 window.addEventListener("DOMContentLoaded", () => {
   function log(message) {
     document.getElementById("log").textContent += message + "\n";
   }
 
+  function writeInstructions(message){
+    document.getElementById("instructions").textContent += message + "\n";
+  }
   // init Bugout with room name
   var b = new Bugout("yes-And", {
     announce: [
@@ -62,17 +116,20 @@ window.addEventListener("DOMContentLoaded", () => {
   // init unique user ID
   const userID = getRandomInt(0, 99999);
 
+  // init typing indicator timer
+  const typingIndicatorTimer = new TypingTimer(document.getElementById('typing'));
+
+  // init timer message end indicator timer
+  const messageTimer = new MessageTimer(document.getElementById('timer')); 
+
   // someone joins room handler
   b.once("seen", function () {
-    log(" Adventure buddy joined \n ----------------------\n");
+    writeInstructions(" Adventure buddy joined \n ----------------------\n");
   });
 
   // write my adress on screen
-  log(" Welcome to your Yes And adventure, here are the rules...\n");
-  log(" Your nickname is: " + userNickname + "\n");
-
-  // init typing indicator timer
-  const typingIndicatorTimer = new TypingTimer(document.getElementById('typing'));
+  writeInstructions(" Welcome to your Yes And adventure, here are the rules...\n");
+  writeInstructions(" Your nickname is: " + userNickname + "\n");
 
   // this function handles typing indication when needed
   function typingIndicatorHandler(senderId, finishedTyping){
@@ -110,8 +167,9 @@ window.addEventListener("DOMContentLoaded", () => {
   // send message handler
   // the message is written to log element
   document.getElementById("input").onkeydown = function (ev) {
-    // enter was pressed
+    // enter was pressed - player is sending a message
     if (ev.keyCode == 13) {
+      messageTimer.stopTimer();
       if (b.lastwirecount) {
         // helping start the convo
 
@@ -143,6 +201,7 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       // if backspace not pressed
       if (ev.keyCode != 8) {
+        messageTimer.start();
         b.send("typing...:" + userID);
       }
     }
@@ -193,7 +252,6 @@ window.addEventListener("DOMContentLoaded", () => {
   // save button
   document.querySelector("#btnSave").addEventListener("click", () => {
     const convoArea = document.getElementById("log");
-
     downloadToFile(convoArea.textContent, "transcript-file.txt", "text/plain");
   });
 
